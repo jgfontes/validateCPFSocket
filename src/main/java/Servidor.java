@@ -32,15 +32,13 @@ public class Servidor {
 
         //Validate if CPF contains zeros
 
-        //Validate first digit rule
-        //Obtaining first digit variable
+       //FIRST DIGIT OPERATIONS
+        //Obtaining the module of the calculation
         int digitsCalculation = 0;
         for(int i = 10; i >= 2; i--) {
-            digitsCalculation += parsedCPF.get(i)*i;
-            System.out.printf("Iteration number: %d equals to %d\n", (10-i), digitsCalculation);
+            digitsCalculation += parsedCPF.get(10-i)*i;
         }
-        //Obtaining the module of the calculation
-        double moduleCalculation = (digitsCalculation % 11);
+        double moduleCalculation = digitsCalculation % 11;
         System.out.printf("The module calculated is: %f\n",moduleCalculation);
         //Obtaining the calculated first verification digit
         int calculatedVerifDigit;
@@ -50,8 +48,32 @@ public class Servidor {
             calculatedVerifDigit = (int) (11 - moduleCalculation);
         }
         System.out.printf("The first verification calculated digit is: %d\n\n", calculatedVerifDigit);
+        //Validate first digit
+        if(parsedCPF.get(9) != calculatedVerifDigit) {
+            System.out.println("ENTERING FALSE LOOP" + parsedCPF.get(9) + calculatedVerifDigit);
+            return false;
+        }
 
-
+        //SECOND DIGIT OPERATIONS
+        //Obtaining new module of the calculation
+        digitsCalculation = 0;
+        for(int i = 11; i >= 2; i--) {
+            digitsCalculation += parsedCPF.get(11-i)*i;
+            System.out.printf("Iteration number %d equals to %d\n", 11-i, digitsCalculation);
+        }
+        moduleCalculation = digitsCalculation % 11;
+        //Obtaining the calculated second verification digit
+        calculatedVerifDigit = 0;
+        if(moduleCalculation == 0 || moduleCalculation == 1) {
+            calculatedVerifDigit = (int) moduleCalculation;
+        } else {
+            calculatedVerifDigit = (int) (11 - moduleCalculation);
+        }
+        System.out.printf("The second verification calculated digit is: %d\n\n", calculatedVerifDigit);
+        //Validate second digit
+        if(parsedCPF.get(10) != calculatedVerifDigit) {
+            return false;
+        }
         return true;
     }
 }
