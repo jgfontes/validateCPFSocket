@@ -1,19 +1,39 @@
+import javax.imageio.IIOException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Servidor {
-    public static void main(String[] args) {
-        System.out.println("Hello World");
+    public static void main(String[] args) throws IOException {
+        ServerSocket server = new ServerSocket(5555);
+        System.out.println("A porta 5555 foi aberta.");
+        while(true) {
+            Socket connection = server.accept();
 
-        Scanner sc = new Scanner(System.in);
+            DataInputStream input = new DataInputStream(connection.getInputStream());
+            DataOutputStream output = new DataOutputStream(connection.getOutputStream());
 
-        String readLine = sc.nextLine();
-        System.out.println(validateCPF(parseCPF(readLine)));
+            String rawCPF = input.readUTF();
+            System.out.println(validateCPF(rawCPF));
+            if (validateCPF(rawCPF)) {
+                output.writeUTF("Este CPF é válido");
+            } else {
+                output.writeUTF("Este CPF é inválido");
+            }
+
+            input.close();
+            output.close();
+            connection.close();
+        }
     }
 
     //Filter CPF special characters
-    public static List<Integer> parseCPF(String inputCPf) {
+    private static List<Integer> parseCPF(String inputCPf) {
         inputCPf = inputCPf.replaceAll("[^0-9]", "");
         System.out.println(inputCPf);
         ArrayList<Integer> parsedCPF = new ArrayList<Integer>();
@@ -24,7 +44,8 @@ public class Servidor {
         return parsedCPF;
     }
 
-    public static boolean validateCPF(List<Integer> parsedCPF) {
+    private static boolean validateCPF(String inputCPf) {
+        List<Integer> parsedCPF = parseCPF(inputCPf);
         //Validate if CPF is bigger os lower than 11
         if (parsedCPF.size() != 11) {
             return false;
