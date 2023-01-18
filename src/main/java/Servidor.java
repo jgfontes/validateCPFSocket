@@ -1,4 +1,3 @@
-import javax.imageio.IIOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -6,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class Servidor {
     public static void main(String[] args) throws IOException {
@@ -46,55 +44,53 @@ public class Servidor {
 
     private static boolean validateCPF(String inputCPf) {
         List<Integer> parsedCPF = parseCPF(inputCPf);
-        //Validate if CPF is bigger os lower than 11
+        //Validate if CPF is bigger os smaller than 11
         if (parsedCPF.size() != 11) {
             return false;
         }
 
         //Validate if CPF contains zeros
+        boolean zeroValidationFlag = true;
+        for(int i = 10; i >= 0; i--) {
+            if (parsedCPF.get(i) != 0) {
+                zeroValidationFlag = false;
+                break;
+            }
+        }
+        if(zeroValidationFlag) {return false;}
 
        //FIRST DIGIT OPERATIONS
-        //Obtaining the module of the calculation
-        int digitsCalculation = 0;
-        for(int i = 10; i >= 2; i--) {
-            digitsCalculation += parsedCPF.get(10-i)*i;
-        }
-        double moduleCalculation = digitsCalculation % 11;
-        System.out.printf("The module calculated is: %f\n",moduleCalculation);
-        //Obtaining the calculated first verification digit
-        int calculatedVerifDigit;
-        if(moduleCalculation == 0 || moduleCalculation == 1) {
-            calculatedVerifDigit = (int) moduleCalculation;
-        } else {
-            calculatedVerifDigit = (int) (11 - moduleCalculation);
-        }
-        System.out.printf("The first verification calculated digit is: %d\n\n", calculatedVerifDigit);
+        int calculatedVerifDigit1 = calculateVerifDigit(parsedCPF, 1);
         //Validate first digit
-        if(parsedCPF.get(9) != calculatedVerifDigit) {
-            System.out.println("ENTERING FALSE LOOP" + parsedCPF.get(9) + calculatedVerifDigit);
+        if(parsedCPF.get(9) != calculatedVerifDigit1) {
             return false;
         }
 
         //SECOND DIGIT OPERATIONS
-        //Obtaining new module of the calculation
-        digitsCalculation = 0;
-        for(int i = 11; i >= 2; i--) {
-            digitsCalculation += parsedCPF.get(11-i)*i;
-            System.out.printf("Iteration number %d equals to %d\n", 11-i, digitsCalculation);
-        }
-        moduleCalculation = digitsCalculation % 11;
-        //Obtaining the calculated second verification digit
-        calculatedVerifDigit = 0;
-        if(moduleCalculation == 0 || moduleCalculation == 1) {
-            calculatedVerifDigit = (int) moduleCalculation;
-        } else {
-            calculatedVerifDigit = (int) (11 - moduleCalculation);
-        }
-        System.out.printf("The second verification calculated digit is: %d\n\n", calculatedVerifDigit);
+        int calculatedVerifDigit2 = calculateVerifDigit(parsedCPF, 2);
         //Validate second digit
-        if(parsedCPF.get(10) != calculatedVerifDigit) {
+        if(parsedCPF.get(10) != calculatedVerifDigit2) {
             return false;
         }
         return true;
+    }
+
+    //digit should be 1 or 2
+    private static int calculateVerifDigit(List<Integer> parsedCPF, int digit) {
+        //Obtaining the module of the calculation
+        int digitsCalculation = 0;
+        for(int i = (9 + digit); i >= 2; i--) {
+            digitsCalculation += parsedCPF.get((9 + digit)-i)*i;
+        }
+        double moduleCalculation = digitsCalculation % 11;
+        //Obtaining the calculated first verification digit
+        int calculatedVerifDigit;
+        if(moduleCalculation == 0 || moduleCalculation == 1) {
+            calculatedVerifDigit = 0;
+        } else {
+            calculatedVerifDigit = (int) (11 - moduleCalculation);
+        }
+
+        return calculatedVerifDigit;
     }
 }
